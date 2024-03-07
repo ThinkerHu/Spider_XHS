@@ -30,7 +30,7 @@ class OneNote:
             data = res['data']['items'][0]
         except:
             print(f'笔记 {note_id} 不允许查看')
-            return
+            return None
         note = handle_note_info(data)
         return note
 
