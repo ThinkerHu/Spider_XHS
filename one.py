@@ -13,7 +13,7 @@ class OneNote:
         self.headers = get_headers()
         self.params = get_params()
 
-    # 单个视频
+    # 单个帖子
     def get_one_note_info(self, url):
         note_id = url.split('/')[-1]
         data = get_note_data(note_id)

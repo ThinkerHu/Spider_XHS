@@ -1,3 +1,4 @@
+import csv
 import os
 import re
 import sys
@@ -8,13 +9,17 @@ from pojo.note import Note_Detail
 from pojo.user import User_Detail
 
 js = execjs.compile(open(r'./static/info.js', 'r', encoding='utf-8').read())
+
+
 def decodedUniChars(url):
     decodedUniChars = url.encode('utf-8').decode("unicode_escape")
     return decodedUniChars
 
+
 def norm_str(str):
     new_str = re.sub(r"|[\\/:*?\"<>| ]+", "", str).replace('\n', '').replace('\r', '')
     return new_str
+
 
 # 时间戳1681220903000 转YYYY-MM-DD HH:MM:SS
 def timestamp_to_str(timestamp):
@@ -22,21 +27,26 @@ def timestamp_to_str(timestamp):
     dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
     return dt
 
+
 def check_and_create_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
         return False
     return True
 
+
 def check_path(path):
     if not os.path.exists(path):
         return False
     return True
 
+
 def timestamp_to_time(timestamp):
     time_local = time.localtime(timestamp / 1000)
     dt = time.strftime("%Y年%m月%d日%H点%M分%S秒", time_local)
     return dt
+
+
 def download_media(path, name, url, type, info=''):
     # 5次错误机会
     for i in range(5):
@@ -61,13 +71,15 @@ def download_media(path, name, url, type, info=''):
                         size += len(data)
                         percentage = size / content_size
                         print(f'\r视频:%.2fMB\t' % (content_size / 1024 / 1024),
-                              '下载进度:[%-50s%.2f%%]耗时: %.1fs, ' % ('>' * int(50 * percentage), percentage * 100, time.time() - start_time),
+                              '下载进度:[%-50s%.2f%%]耗时: %.1fs, ' % (
+                                  '>' * int(50 * percentage), percentage * 100, time.time() - start_time),
                               end='')
                     print(f"{name}下载完成")
             break
         except:
-            print(f"第{i+1}次下载失败，重新下载, 剩余{4-i}次机会")
+            print(f"第{i + 1}次下载失败，重新下载, 剩余{4 - i}次机会")
             continue
+
 
 def handle_profile_info(userId, html_text):
     true, false, null, undefined = True, False, None, None
@@ -95,8 +107,10 @@ def handle_profile_info(userId, html_text):
             tags.append(tag['name'])
         except:
             pass
-    user_detail = User_Detail(None, userId, nickname, avatar, desc, follows, fans, interaction, ipLocation, gender, tags)
+    user_detail = User_Detail(None, userId, nickname, avatar, desc, follows, fans, interaction, ipLocation, gender,
+                              tags)
     return user_detail
+
 
 def save_user_detail(path, user):
     with open(f'{path}/detail.txt', mode="w", encoding="utf-8") as f:
@@ -111,22 +125,26 @@ def save_user_detail(path, user):
         f.write(f'性别: {user.gender}\n')
         f.write(f'标签: {user.tags}\n')
 
-def save_note_detail(path, note):
-    with open(path + '/' + 'detail.txt', mode="w", encoding="utf-8") as f:
-        # 逐行输出到txt里
-        f.write(f"笔记url: {f'https://www.xiaohongshu.com/explore/{note.note_id}'}\n")
-        f.write(f'笔记类型: {note.note_type}\n')
-        f.write(f"笔记标题: {note.title}\n")
-        f.write(f"笔记描述: {note.desc}\n")
-        f.write(f"笔记点赞数量: {note.liked_count}\n")
-        f.write(f"笔记收藏数量: {note.collected_count}\n")
-        f.write(f"笔记评论数量: {note.comment_count}\n")
-        f.write(f"笔记分享数量: {note.share_count}\n")
-        f.write(f"笔记上传时间: {timestamp_to_str(note.upload_time)}\n")
-        f.write(f"笔记标签: {note.tag_list}\n")
-        f.write(f"笔记ip归属地: {note.ip_location}\n")
+
+def save_note_detail(note):
+    dit_1 = {
+        'ID': note.note_id,
+        '笔记url': {f'https://www.xiaohongshu.com/explore/{note.note_id}'},
+        '笔记标题': note.note_type,
+        '笔记类型': note.note_type,
+        '笔记描述': note.desc,
+        '笔记点赞数量': note.liked_count,
+        '笔记收藏数量': note.collected_count,
+        '笔记评论数量': note.comment_count,
+        '笔记分享数量': note.share_count,
+        '笔记上传时间': timestamp_to_str(note.upload_time),
+        '笔记标签': note.tag_list,
+    }
+    print(dit_1)
+
 
 def handle_note_info(data):
+    print(data)
     note_id = data['id']
     note_type = data['note_card']['type']
     user_id = data['note_card']['user']['user_id']
@@ -155,8 +173,11 @@ def handle_note_info(data):
         ip_location = data['note_card']['ip_location']
     else:
         ip_location = '未知'
-    note_detail = Note_Detail(None, note_id, note_type, user_id, nickname, avatar, title, desc, liked_count, collected_count, comment_count, share_count, video_addr, image_list, tags, upload_time, ip_location)
+    note_detail = Note_Detail(None, note_id, note_type, user_id, nickname, avatar, title, desc, liked_count,
+                              collected_count, comment_count, share_count, video_addr, image_list, tags, upload_time,
+                              ip_location)
     return note_detail
+
 
 def get_cookies():
     return {
@@ -169,6 +190,7 @@ def get_cookies():
         "websectiga": "",
         "sec_poison_id": ""
     }
+
 
 def get_home_headers():
     return {
@@ -187,6 +209,8 @@ def get_home_headers():
         "upgrade-insecure-requests": "1",
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
     }
+
+
 def get_headers():
     return {
         "authority": "edith.xiaohongshu.com",
@@ -208,6 +232,8 @@ def get_note_data(note_id):
             "CRD_WM_WEBP"
         ]
     }
+
+
 def get_search_data():
     return {
         "image_scenes": "FD_PRV_WEBP,FD_WM_WEBP",
@@ -218,6 +244,8 @@ def get_search_data():
         "search_id": "2c7hu5b3kzoivkh848hp0",
         "sort": "general"
     }
+
+
 def get_params():
     return {
         "num": "30",
@@ -225,6 +253,7 @@ def get_params():
         "user_id": "",
         "image_scenes": ""
     }
+
 
 def check_cookies():
     more_url = 'https://edith.xiaohongshu.com/api/sns/web/v1/user_posted'

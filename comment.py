@@ -50,7 +50,7 @@ def get_comments(note_id):
     page = 0
     while True:
         time.sleep(1)
-        url = f"https://edith.xiaohongshu.com/api/sns/web/v2/comment/page?note_id={note_id}&cursor={cursor}&top_comment_id=&image_formats=jpg,webp,avif"
+        url = f"https://edith.xiaohongshu.com/api/sns/web/v2/comment/page?note_id={note_id}&cursor={cursor}"
         json_data = spider(url)
         for index in json_data['data']['comments']:
             dit = {
@@ -63,13 +63,10 @@ def get_comments(note_id):
             }
             print(dit)
             csv_writer.writerow(dit)
-            print('正在打印副评论:')
+            # print('正在打印评论:')
             get_sub_comments(note_id, index['id'], index['sub_comment_cursor'])
         if not json_data['data']['has_more']:
             break
         cursor = json_data['data']['cursor']
         page = page + 1
         print(f'正在打印第{page}页数据:--------------------------------------')
-
-
-get_comments("65e685de0000000003037c65")

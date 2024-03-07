@@ -1,6 +1,8 @@
 import json
 import re
 import requests
+
+from comment import get_comments
 from one import OneNote
 from xhs_utils.xhs_util import get_headers, get_search_data, get_params, js, check_cookies
 
@@ -63,7 +65,8 @@ class Search:
                 break
             for note in items:
                 index += 1
-                self.oneNote.save_one_note_info(self.oneNote.detail_url + note['id'], need_cover, '', 'datas_search')
+                get_comments(note['id'])
+                # self.oneNote.save_one_note_info(self.oneNote.detail_url + note['id'], need_cover, '', 'datas_search')
                 if index >= number:
                     break
             if not res['data']['has_more'] and index < number:
