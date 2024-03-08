@@ -11,6 +11,7 @@ from xhs_utils.xhs_util import get_headers, get_search_data, get_params, js, che
 class Search:
 
     def __init__(self, cookies=None):
+        self.csv_writer = None
         if cookies is None:
             self.cookies = check_cookies()
         else:
@@ -20,7 +21,8 @@ class Search:
         self.params = get_params()
         self.oneNote = OneNote(self.cookies)
 
-        f = open('小红书搜索.csv', mode='a', encoding='utf-8', newline='')
+    def init_csv_writer(self, keyword):
+        f = open(f'话题【{keyword}】相关帖子.csv', mode='a', encoding='utf-8', newline='')
         self.csv_writer = csv.DictWriter(f, fieldnames=['帖子ID', '用户昵称', '帖子类型', '发布时间', '标题', '内容',
                                                         '点赞数', '收藏数', '评论数'])
         self.csv_writer.writeheader()
@@ -52,6 +54,7 @@ class Search:
         return note_ids
 
     def handle_note_info(self, query, sort, need_cover=False):
+        self.init_csv_writer(query)
         data = get_search_data()
         data['sort'] = sort
         api = '/api/sns/web/v1/search/notes'
@@ -107,9 +110,7 @@ class Search:
 if __name__ == '__main__':
     search = Search()
     # 搜索的关键词 
-    query = '亚运会111111111111'
-    # 搜索的数量（前多少个）
-    number = 2222
+    query = '中国什么时候超越美国'
     # 排序方式 general: 综合排序 popularity_descending: 热门排序 time_descending: 最新排序
     sort = 'general'
     info = {
