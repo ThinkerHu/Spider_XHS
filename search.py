@@ -111,7 +111,7 @@ class Search:
 if __name__ == '__main__':
     search = Search()
     # 搜索的关键词 
-    keyword = ""
+    keyword = "深圳"
     start = "2023-03-01"
     end = "2024-03-08"
     # 排序方式 general: 综合排序 popularity_descending: 热门排序 time_descending: 最新排序

@@ -269,6 +269,13 @@ def get_params():
         "image_scenes": ""
     }
 
+def get_comment_cookies():
+    if not os.path.exists("./static/cookies.txt"):
+        raise Exception("获取cookie")
+    with open("./static/cookies.txt", "r", encoding="utf-8") as f:
+        cookies_obj = f.read()
+    cookies_local = eval(cookies_obj)
+    return f"webBuild={cookies_local['webBuild']}; xsecappid={cookies_local['xsecappid']}; a1={cookies_local['a1']}; webId={cookies_local['webId']}; websectiga={cookies_local['websectiga']}; sec_poison_id={cookies_local['sec_poison_id']}; gid={cookies_local['gid']};  web_session={cookies_local['web_session']}"
 
 def check_cookies():
     more_url = 'https://edith.xiaohongshu.com/api/sns/web/v1/user_posted'
