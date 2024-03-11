@@ -7,6 +7,7 @@ import execjs
 import requests
 from pojo.note import Note_Detail
 from pojo.user import User_Detail
+from datetime import datetime
 
 js = execjs.compile(open(r'./static/info.js', 'r', encoding='utf-8').read())
 
@@ -26,6 +27,19 @@ def timestamp_to_str(timestamp):
     time_local = time.localtime(timestamp / 1000)
     dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
     return dt
+
+
+def is_timestamp_between_dates(timestamp, start_date, end_date):
+    # 将字符串日期转换为datetime对象
+    start_datetime = datetime.strptime(start_date, "%Y-%m-%d")
+    end_datetime = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # 将datetime对象转换为时间戳
+    start_timestamp = int(start_datetime.timestamp())
+    end_timestamp = int(end_datetime.timestamp())
+
+    # 判断时间戳是否在两个日期的时间戳之间
+    return start_timestamp <= timestamp / 1000 <= end_timestamp
 
 
 def check_and_create_path(path):
@@ -223,6 +237,7 @@ def get_headers():
         "x-s": "",
         "x-t": ""
     }
+
 
 def get_note_data(note_id):
     return {

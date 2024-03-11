@@ -5,7 +5,8 @@ import requests
 
 from comment import get_comments
 from one import OneNote
-from xhs_utils.xhs_util import get_headers, get_search_data, get_params, js, check_cookies
+from xhs_utils.xhs_util import get_headers, get_search_data, get_params, js, check_cookies, timestamp_to_str, \
+    is_timestamp_between_dates
 
 
 class Search:
@@ -53,7 +54,7 @@ class Search:
                     break
         return note_ids
 
-    def handle_note_info(self, query, sort, need_cover=False):
+    def search_note(self, query, start, end, sort):
         self.init_csv_writer(query)
         data = get_search_data()
         data['sort'] = sort
@@ -80,41 +81,39 @@ class Search:
                 index += 1
                 print(item)
                 note = self.oneNote.get_one_note_info(self.oneNote.detail_url + item['id'])
-                if note == None:
+                if note is None:
                     print("帖子信息为空")
                 else:
-                    dit_1 = {
-                        '帖子ID': note.note_id,
-                        '用户昵称': note.nickname,
-                        '帖子类型': note.note_type,
-                        '发布时间': note.upload_time,
-                        '标题': note.title,
-                        '内容': note.desc,
-                        '点赞数': note.share_count,
-                        '收藏数': note.collected_count,
-                        '评论数': note.comment_count
-                    }
-                    self.csv_writer.writerow(dit_1)
-                    get_comments(item['id'])
+                    print(timestamp_to_str(note.upload_time))
+                    if is_timestamp_between_dates(note.upload_time, start, end):
+                        dit_1 = {
+                            '帖子ID': note.note_id,
+                            '用户昵称': note.nickname,
+                            '帖子类型': note.note_type,
+                            '发布时间': note.upload_time,
+                            '标题': note.title,
+                            '内容': note.desc,
+                            '点赞数': note.share_count,
+                            '收藏数': note.collected_count,
+                            '评论数': note.comment_count
+                        }
+                        self.csv_writer.writerow(dit_1)
+                        get_comments(item['id'])
+                    else:
+                        print("is not in time")
+
             if not res['data']['has_more']:
                 print(f'搜索结果数量为 {index}')
                 break
         print(f'搜索结果保存完成，共 {index} 个笔记')
 
-    def main(self, info):
-        query = info['query']
-        sort = info['sort']
-        self.handle_note_info(query, sort, need_cover=True)
-
 
 if __name__ == '__main__':
     search = Search()
     # 搜索的关键词 
-    query = '中国什么时候超越美国'
+    keyword = ""
+    start = "2023-03-01"
+    end = "2024-03-08"
     # 排序方式 general: 综合排序 popularity_descending: 热门排序 time_descending: 最新排序
     sort = 'general'
-    info = {
-        'query': query,
-        'sort': sort,
-    }
-    search.main(info)
+    search.search_note(keyword, start, end, sort)
