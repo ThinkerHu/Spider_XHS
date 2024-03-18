@@ -42,6 +42,16 @@ def is_timestamp_between_dates(timestamp, start_date, end_date):
     return start_timestamp <= timestamp / 1000 <= end_timestamp
 
 
+def contains_strings(main_string, substrings):
+    # 将子字符串用空格分割成列表
+    substrings_list = substrings.split()
+    # 检查每个子字符串是否在主字符串中
+    for substring in substrings_list:
+        if substring.lower() not in main_string.lower():
+            return False
+    return True
+
+
 def check_and_create_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -269,6 +279,7 @@ def get_params():
         "image_scenes": ""
     }
 
+
 def get_comment_cookies():
     if not os.path.exists("./static/cookies.txt"):
         raise Exception("获取cookie")
@@ -276,6 +287,7 @@ def get_comment_cookies():
         cookies_obj = f.read()
     cookies_local = eval(cookies_obj)
     return f"webBuild={cookies_local['webBuild']}; xsecappid={cookies_local['xsecappid']}; a1={cookies_local['a1']}; webId={cookies_local['webId']}; websectiga={cookies_local['websectiga']}; sec_poison_id={cookies_local['sec_poison_id']}; gid={cookies_local['gid']};  web_session={cookies_local['web_session']}"
+
 
 def check_cookies():
     more_url = 'https://edith.xiaohongshu.com/api/sns/web/v1/user_posted'

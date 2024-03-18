@@ -6,7 +6,9 @@ import requests
 from comment import get_comments
 from one import OneNote
 from xhs_utils.xhs_util import get_headers, get_search_data, get_params, js, check_cookies, timestamp_to_str, \
-    is_timestamp_between_dates
+    is_timestamp_between_dates, timestamp_to_time, contains_strings
+
+search_key = "北京 雾霾"
 
 
 class Search:
@@ -22,10 +24,13 @@ class Search:
         self.params = get_params()
         self.oneNote = OneNote(self.cookies)
 
-    def init_csv_writer(self, keyword):
-        f = open(f'话题【{keyword}】相关帖子.csv', mode='a', encoding='utf-8', newline='')
-        self.csv_writer = csv.DictWriter(f, fieldnames=['帖子ID', '用户昵称', '帖子类型', '发布时间', '标题', '内容',
-                                                        '点赞数', '收藏数', '评论数'])
+    def init_csv_writer(self, keyword, startDate, endDate):
+        f = open(f'话题【{keyword}】从{startDate}到{endDate}相关笔记.csv', mode='a', encoding='utf-8', newline='')
+        self.csv_writer = csv.DictWriter(f,
+                                         fieldnames=['笔记ID', '用户昵称', '帖子类型', '帖子链接', '发布时间',
+                                                     '发布日期', '标题',
+                                                     '内容',
+                                                     '点赞数', '收藏数', '评论数'])
         self.csv_writer.writeheader()
 
     def get_search_note(self, query, number):
@@ -55,7 +60,7 @@ class Search:
         return note_ids
 
     def search_note(self, query, start, end, sort):
-        self.init_csv_writer(query)
+        self.init_csv_writer(query, start, end)
         data = get_search_data()
         data['sort'] = sort
         api = '/api/sns/web/v1/search/notes'
@@ -80,17 +85,21 @@ class Search:
             for item in items:
                 index += 1
                 print(item)
-                note = self.oneNote.get_one_note_info(self.oneNote.detail_url + item['id'])
+                url = self.oneNote.detail_url + item['id']
+                note = self.oneNote.get_one_note_info(url)
                 if note is None:
                     print("帖子信息为空")
                 else:
                     print(timestamp_to_str(note.upload_time))
-                    if is_timestamp_between_dates(note.upload_time, start, end):
+                    if is_timestamp_between_dates(note.upload_time, start, end) & contains_strings(note.desc,
+                                                                                                   search_key):
                         dit_1 = {
-                            '帖子ID': note.note_id,
+                            '笔记ID': note.note_id,
                             '用户昵称': note.nickname,
                             '帖子类型': note.note_type,
+                            '帖子链接': url,
                             '发布时间': note.upload_time,
+                            '发布日期': timestamp_to_time(note.upload_time),
                             '标题': note.title,
                             '内容': note.desc,
                             '点赞数': note.share_count,
@@ -100,20 +109,19 @@ class Search:
                         self.csv_writer.writerow(dit_1)
                         get_comments(item['id'])
                     else:
-                        print("is not in time")
+                        print("is not in time or not contain keyword")
 
             if not res['data']['has_more']:
                 print(f'搜索结果数量为 {index}')
                 break
+
         print(f'搜索结果保存完成，共 {index} 个笔记')
 
 
 if __name__ == '__main__':
     search = Search()
-    # 搜索的关键词 
-    keyword = "深圳"
-    start = "2023-03-01"
-    end = "2024-03-08"
+    start = "2019-03-16"
+    end = "2024-03-16"
     # 排序方式 general: 综合排序 popularity_descending: 热门排序 time_descending: 最新排序
     sort = 'general'
-    search.search_note(keyword, start, end, sort)
+    search.search_note(search_key, start, end, sort)
